@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import EditBlock from './Edit';
 import { DragDropList } from '@plone/volto/components';
 import { getBlocks } from '@plone/volto/helpers';
@@ -15,20 +15,8 @@ import {
 import EditBlockWrapper from './EditBlockWrapper';
 import { setSidebarTab } from '@plone/volto/actions';
 import { useDispatch } from 'react-redux';
-import { useDetectClickOutside } from '@plone/volto/helpers';
+import { useDetectClickOutside, useEvent } from '@plone/volto/helpers';
 import config from '@plone/volto/registry';
-
-const useEvent = (event, handler) => {
-  useEffect(() => {
-    // initiate the event handler
-    document.addEventListener(event, handler);
-
-    // this will clean up the event every time the component is re-rendered
-    return function cleanup() {
-      document.removeEventListener(event, handler);
-    };
-  });
-};
 
 const BlocksForm = (props) => {
   const {
@@ -122,7 +110,13 @@ const BlocksForm = (props) => {
   };
 
   const onInsertBlock = (id, value, current) => {
-    const [newId, newFormData] = insertBlock(properties, id, value, current, 1);
+    const [newId, newFormData] = insertBlock(
+      properties,
+      id,
+      value,
+      current,
+      config.settings.legacyAddButton ? 0 : 1,
+    );
     onChangeFormData(newFormData);
     return newId;
   };
@@ -174,7 +168,7 @@ const BlocksForm = (props) => {
   }
 
   useEvent('voltoClickBelowContent', () => {
-    if (!isMainForm) return;
+    if (config.settings.legacyAddButton || !isMainForm) return;
     onSelectBlock(
       onAddBlock(config.settings.defaultBlockType, blockList.length),
     );
